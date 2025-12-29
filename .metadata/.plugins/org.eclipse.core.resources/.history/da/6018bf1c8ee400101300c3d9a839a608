@@ -1,0 +1,15 @@
+package com.projet.service;
+
+import java.util.List;
+import java.util.Map;
+
+import com.projet.entities.Person;
+
+public interface PersonService {
+    Map<String, String> addPerson(Personne p);
+    Personne getPersonById(Long id);
+    List<Personne> getAllPersons();
+    boolean updatePerson(Long id, Personne p);
+    boolean deletePerson(Long id);
+    List<Personne> searchByNom(String nom);
+}

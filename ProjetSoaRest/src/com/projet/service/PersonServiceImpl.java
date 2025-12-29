@@ -1,0 +1,123 @@
+package com.projet.service;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.Persistence;
+
+import com.projet.entities.Personne;
+
+public class PersonServiceImpl implements PersonService {
+
+    // Use the same name as in persistence.xml
+    EntityManagerFactory emf = Persistence.createEntityManagerFactory("ProjetRest");
+    EntityManager em = emf.createEntityManager();
+
+    @Override
+    public Map<String, String> addPerson(Personne p) {
+        Map<String, String> result = new HashMap<>();
+        try {
+            if (!em.getTransaction().isActive())
+                em.getTransaction().begin();
+            em.persist(p);
+            em.getTransaction().commit();
+            em.clear();
+            result.put("Status", "OK");
+        } catch (Exception e) {
+            e.printStackTrace();
+            if (em.getTransaction().isActive())
+                em.getTransaction().rollback();
+            result.put("Status", "KO");
+        }
+        return result;
+    }
+
+    @Override
+    public Personne getPersonById(Long id) {
+        try {
+            if (!em.getTransaction().isActive())
+                em.getTransaction().begin();
+            return em.find(Personne.class, id);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    @Override
+    public List<Personne> getAllPersons() {
+        try {
+            if (!em.getTransaction().isActive())
+                em.getTransaction().begin();
+            // Entity name must be Personne
+            return em.createQuery("SELECT p FROM Personne p", Personne.class)
+                     .getResultList();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Collections.emptyList();
+        }
+    }
+
+    @Override
+    public boolean updatePerson(Long id, Personne p) {
+        try {
+            if (!em.getTransaction().isActive())
+                em.getTransaction().begin();
+            Personne existing = em.find(Personne.class, id);
+            if (existing == null) return false;
+
+            existing.setCin(p.getCin());
+            existing.setNom(p.getNom());
+            existing.setEmail(p.getEmail());
+
+            em.merge(existing);
+            em.getTransaction().commit();
+            em.clear();
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            if (em.getTransaction().isActive())
+                em.getTransaction().rollback();
+            return false;
+        }
+    }
+
+    @Override
+    public boolean deletePerson(Long id) {
+        try {
+            if (!em.getTransaction().isActive())
+                em.getTransaction().begin();
+            Personne existing = em.find(Personne.class, id);
+            if (existing == null) return false;
+            em.remove(existing);
+            em.getTransaction().commit();
+            em.clear();
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            if (em.getTransaction().isActive())
+                em.getTransaction().rollback();
+            return false;
+        }
+    }
+
+    @Override
+    public List<Personne> searchByNom(String nom) {
+        try {
+            if (!em.getTransaction().isActive())
+                em.getTransaction().begin();
+            return em.createQuery(
+                        "SELECT p FROM Personne p WHERE LOWER(p.nom) LIKE :n",
+                        Personne.class)
+                    .setParameter("n", "%" + nom.toLowerCase() + "%")
+                    .getResultList();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Collections.emptyList();
+        }
+    }
+}

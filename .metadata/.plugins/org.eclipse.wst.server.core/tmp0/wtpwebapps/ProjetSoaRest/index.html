@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Liste des personnes</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<div class="navbar">
+    <div>Gestion des personnes</div>
+    <div class="navbar-links"></div>
+</div>
+
+<div class="container">
+    <h1>Liste des personnes</h1>
+    <div class="message" id="listMessage"></div>
+
+    <div class="table-wrapper">
+        <table id="personsTable">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>CIN</th>
+                <th>Nom</th>
+                <th>Email</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+
+<script src="assets/js/api.js"></script>
+<script src="assets/js/ui-common.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+    renderNavbar('list');
+    const tbody = document.querySelector('#personsTable tbody');
+    const msg = document.getElementById('listMessage');
+
+    async function loadPersons() {
+        try {
+            showMessage(msg, 'Chargement...', '');
+            const persons = await getPersons();
+            tbody.innerHTML = '';
+
+            if (!persons || persons.length === 0) {
+                showMessage(msg, 'Aucune personne trouvée.', '');
+                return;
+            }
+            showMessage(msg, '', '');
+            persons.forEach(p => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${p.id ?? ''}</td>
+                    <td>${p.cin ?? ''}</td>
+                    <td>${p.nom ?? ''}</td>
+                    <td>${p.email ?? ''}</td>
+                    <td class="actions">
+                        <a class="btn btn-secondary" href="edit.html?id=${encodeURIComponent(p.id)}">Modifier</a>
+                        <button class="btn btn-danger" data-id="${p.id}">Supprimer</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        } catch (e) {
+            showMessage(msg, 'Erreur de chargement : ' + e.message, 'error');
+        }
+    }
+
+    tbody.addEventListener('click', async (e) => {
+        const btn = e.target.closest('button[data-id]');
+        if (!btn) return;
+        const id = btn.getAttribute('data-id');
+        if (!confirm('Supprimer la personne ' + id + ' ?')) return;
+        try {
+            await deletePerson(id);
+            await loadPersons();
+            showMessage(msg, 'Personne supprimée.', 'success');
+        } catch (err) {
+            showMessage(msg, 'Erreur suppression : ' + err.message, 'error');
+        }
+    });
+
+    await loadPersons();
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Recherche de personnes</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<div class="navbar">
+    <div>Gestion des personnes</div>
+    <div class="navbar-links"></div>
+</div>
+
+<div class="container">
+    <h1>Recherche</h1>
+
+    <h2>Par ID</h2>
+    <form id="searchByIdForm">
+        <div class="form-group">
+            <label for="searchId">ID</label>
+            <input type="number" id="searchId" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Rechercher</button>
+    </form>
+
+    <h2 style="margin-top:20px;">Par nom</h2>
+    <form id="searchByNameForm">
+        <div class="form-group">
+            <label for="searchName">Nom</label>
+            <input type="text" id="searchName" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Rechercher</button>
+    </form>
+
+    <div class="table-wrapper" style="margin-top:16px;">
+        <table id="resultTable">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>CIN</th>
+                <th>Nom</th>
+                <th>Email</th>
+            </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <div class="message" id="searchMessage"></div>
+</div>
+
+<script src="assets/js/api.js"></script>
+<script src="assets/js/ui-common.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    renderNavbar('search');
+
+    const byIdForm = document.getElementById('searchByIdForm');
+    const byNameForm = document.getElementById('searchByNameForm');
+    const tbody = document.querySelector('#resultTable tbody');
+    const msg = document.getElementById('searchMessage');
+
+    function renderResult(list) {
+        tbody.innerHTML = '';
+        if (!list || list.length === 0) {
+            showMessage(msg, 'Aucun résultat.', '');
+            return;
+        }
+        showMessage(msg, '', '');
+        list.forEach(p => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${p.id ?? ''}</td>
+                <td>${p.cin ?? ''}</td>
+                <td>${p.nom ?? ''}</td>
+                <td>${p.email ?? ''}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    byIdForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = document.getElementById('searchId').value;
+        if (!id) return;
+        try {
+            showMessage(msg, 'Recherche...', '');
+            const p = await getPersonById(id);
+            renderResult(p ? [p] : []);
+        } catch (err) {
+            showMessage(msg, 'Erreur : ' + err.message, 'error');
+        }
+    });
+
+    byNameForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const name = document.getElementById('searchName').value.trim();
+        if (!name) return;
+        try {
+            showMessage(msg, 'Recherche...', '');
+            const persons = await searchPersonsByName(name);
+            renderResult(Array.isArray(persons) ? persons : []);
+        } catch (err) {
+            showMessage(msg, 'Erreur : ' + err.message, 'error');
+        }
+    });
+});
+</script>
+</body>
+</html>

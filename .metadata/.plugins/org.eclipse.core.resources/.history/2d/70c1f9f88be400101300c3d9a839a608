@@ -1,0 +1,15 @@
+<persistence-unit name="…">
+    <description>Hibernate Entity Manager Example</description>
+    <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+    <class>…</class>
+    <properties>
+        <property name="javax.persistence.jdbc.driver"
+                  value="com.mysql.jdbc.Driver" />
+        <property name="javax.persistence.jdbc.url"
+                  value="jdbc:mysql://localhost:…/…?serverTimezone=UTC" />
+        <property name="javax.persistence.jdbc.user" value="…" />
+        <property name="javax.persistence.jdbc.password" value="…" />
+        <property name="hibernate.show_sql" value="true" />
+        <property name="hibernate.hbm2ddl.auto" value="update" />
+    </properties>
+</persistence-unit>

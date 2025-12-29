@@ -1,0 +1,70 @@
+package com.projet.api;
+
+import java.util.List;
+import java.util.Map;
+
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.MediaType;
+
+import com.projet.entities.Personne;
+import com.projet.service.PersonServiceImpl;
+
+@Path("/")
+public class RestRouter {
+
+    PersonServiceImpl personService = new PersonServiceImpl();
+
+    @Path("/persons")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<Personne> getPersons() {
+        return personService.getAllPersons();
+    }
+
+    @Path("/persons/{id}")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public Personne getPersonById(@PathParam("id") Long id) {
+        return personService.getPersonById(id);
+    }
+
+    @Path("/persons")
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Map<String, String> addPerson(Personne p) {
+        return personService.addPerson(p);
+    }
+
+    @Path("/persons/{id}")
+    @PUT
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Map<String, String> updatePerson(@PathParam("id") Long id, Personne p) {
+        boolean ok = personService.updatePerson(id, p);
+        return java.util.Collections.singletonMap("Status", ok ? "OK" : "KO");
+    }
+
+    @Path("/persons/{id}")
+    @DELETE
+    @Produces(MediaType.APPLICATION_JSON)
+    public Map<String, String> deletePerson(@PathParam("id") Long id) {
+        boolean ok = personService.deletePerson(id);
+        return java.util.Collections.singletonMap("Status", ok ? "OK" : "KO");
+    }
+
+    @Path("/persons/search")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<Personne> searchPersons(@QueryParam("nom") String nom) {
+        return personService.searchByNom(nom == null ? "" : nom);
+    }
+}
